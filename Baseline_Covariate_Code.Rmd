@@ -1,0 +1,105 @@
+```{r, include = FALSE}
+require(plyr)
+
+full = read.csv("C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/Table_1_PValue_Study.csv",skip = 1)
+full2 = rename(full,c("What.is.your.name." = "name","What.type.of.trial.is.this." = "Type","How.many.individuals.were.enrolled.in.this.study." = "N", "Is.there.a.baseline.characteristics.table." = "Table","If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....Yes..p.value.mentioned"="No_Tab_TextP",
+"If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....No" ="No_Tab_TextN",
+"If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....Yes..see.text.pasted.below" = "No_Tab_TextT", "If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....Yes..confidence.intervals.or.standard.error.mentioned"="No_Tab_TextC",
+"Are.p.values.presented.in.the.baseline.characteristics.table..Yes..p.value" = "TabP",
+"Are.p.values.presented.in.the.baseline.characteristics.table..No" = "TabN",
+"Are.p.values.presented.in.the.baseline.characteristics.table..Unclear..please.explain." = "TabT","Are.p.values.presented.in.the.baseline.characteristics.table..Yes..significance.testing.referenced"= "TabG", "Are.p.values.presented.in.the.baseline.characteristics.table..Yes..confidence.intervals.or.standard.error" = "TabC",
+"Any.other.comments.about.the.study.that.confused.you.or.you.would.like.to.comment.on." = "Comments","Article.Number" = "Article", "Year.of.Publication" = "Year"))
+proper_data = data.frame(Name = full2$name, Article = full2$Article, Year = full2$Year, Type = full2$Type, N = full2$N, Table = full2$Table,TabP = full2$TabP,TabC = full2$TabC,TabT = full2$TabT,TabN = full2$TabN, TabG = full2$TabG, No_Tab_TextP = full2$No_Tab_TextP,No_Tab_TextN = full2$No_Tab_TextN,No_Tab_TextT = full2$No_Tab_TextT,No_Tab_TextC = full2$No_Tab_TextC,Comments = full2$Comments)
+
+proper_data$TabC = proper_data$TabC + 1
+proper_data$TabT = proper_data$TabT + 2
+proper_data$TabG = proper_data$TabG + 3
+proper_data$TabN = proper_data$TabN + 4
+proper_data$No_Tab_TextC = proper_data$No_Tab_TextC + 1
+proper_data$No_Tab_TextT = proper_data$No_Tab_TextT + 2
+proper_data$No_Tab_TextN = proper_data$No_Tab_TextN + 3
+proper_data[is.na(proper_data)] <- 0
+
+proper_data2 = transform(proper_data, tab_sig = TabP + TabC + TabT + TabN + TabG, no_tab = No_Tab_TextP + No_Tab_TextC + No_Tab_TextT + No_Tab_TextN)
+
+proper_data3 = data.frame(Name = proper_data2$Name, Article = proper_data2$Article, Type = proper_data2$Type, N = proper_data2$N, Table = proper_data2$Table,tab_sig = proper_data2$tab_sig, no_tab = proper_data2$no_tab,Comments = proper_data2$Comments, Year = proper_data2$Year)
+proper_data3[proper_data3 == 0] <- NA
+
+subR = subset(proper_data3, Name == 1)
+subM = subset(proper_data3, Name == 3)
+
+subR2 = rename(subR, c("Year" = "Year_R", "Type" = "Type_R", "N" = "N_R", "Table" = "Table_R", "tab_sig" = "tab_sig_R", "no_tab" = "no_tab_R", "Comments" = "Comments_R"))
+subM2 = rename(subM, c("Year" = "Year_M", "Type" = "Type_M", "N" = "N_M", "Table" = "Table_M", "tab_sig" = "tab_sig_M", "no_tab" = "no_tab_M", "Comments" = "Comments_M"))
+R_half = data.frame(Article = subR2$Article, Year_R = subR2$Year_R, Type_R = subR2$Type_R, N_R = subR2$N_R, Table_R = subR2$Table_R, tab_sig_R = subR2$tab_sig_R, no_tab_R = subR2$no_tab_R, Comments_R = subR2$Comments_R)
+M_half = data.frame(Article = subM2$Article,Year_M = subM2$Year_M,Type_M = subM2$Type_M, N_M = subM2$N_M, Table_M = subM2$Table_M, tab_sig_M = subM2$tab_sig_M, no_tab_M = subM2$no_tab_M, Comments_M = subM2$Comments_M)
+
+# Cleaned complete dataset. No inconsistencies between Matt and me for article number, year of paper, presence of baseline table, and presence of significance testing.
+final_data = merge(R_half,M_half,by="Article", all = TRUE)
+
+# To read the variable values in the dataset:
+# For many variable names, _R and _M refer to answers submitted by Ross and Matt, respectively.
+# Name: 1 is Ross, 3 is Matt
+
+# Type: 1 is individual RCT, 2 is CRCT by Team, 3 is CRCT not by Team, 5 is none, 6 is crossover
+
+# N: 1 is < 50, 2 is 50-100, 3 is 101-150, 4 is 401-500, 5 is > 500, 6 is 201-300, 7 is 301-400
+
+# Table: 1 is has baseline covariate table, 2 is no
+
+# tab_sig: For question "Are p-values presented..." 1 is p-value, 2 is confidence interval, 3 is # text, 4 is sig referenced, 5 is no
+
+# no_tab: For question "If no...", 1 is p-value, 2 is confidence interval, 3 is text, 4 is no
+
+# Subset of article with baseline table
+agree_ATS = subset(final_data, Table_R == 1 & Type_R < 5)
+# Subset of article with no baseline table
+agree_ATT = subset(final_data, Table_R == 2 & Type_R < 5)
+
+# A bunch of subsets necessary for the data analysis
+sub05_T = subset(agree_ATS, Year_R == 1)
+subt_05 = subset(sub05_T, tab_sig_R == 5)
+sub15_T = subset(agree_ATS, Year_R == 3)
+subt_15 = subset(sub15_T, tab_sig_R == 5)
+sub05_N = subset(agree_ATT, Year_R == 1)
+sub15_N = subset(agree_ATT, Year_R == 3)
+```
+
+### 2005 and 2015 articles with baseline table
+```{r}
+nrow(sub05_T) # Number of 2005 articles with baseline table
+length(sub05_T$tab_sig_R[sub05_T$tab_sig_R < 5]) # Have sig test
+length(subt_05$Article) # Number of 2005 articles with no sig test in baseline table
+length(subt_05$Article[subt_05$no_tab_R < 4]) # Have sig test in text
+nrow(sub15_T) # Number of 2015 articles with baseline table
+length(sub15_T$tab_sig_R[sub15_T$tab_sig_R < 5]) # Have sig test
+nrow(subt_15) # Number of 2015 articles with no sig test in baseline table
+length(subt_15$Article[subt_15$no_tab_R < 4]) # Have sig test in text
+```
+
+### 2005 and 2015 articles without baseline table
+```{r}
+nrow(sub05_N) # Number of 2005 articles without baseline table
+length(sub05_N$no_tab_R[sub05_N$no_tab_R < 4]) # Have sig test in text
+nrow(sub15_N) # Number of 2015 articles without baseline table
+length(sub15_N$no_tab_R[sub15_N$no_tab_R < 4]) ## Have sig test in text
+```
+
+### Chi-square test for Table 1 
+```{r,echo=FALSE}
+gendertable = array(c(27,18,18,27),dim=c(2,2),dimnames = list(Gender = c("Male", "Female"), 
+                                                            Treatment = c("Yes","No")))
+print(gendertable)
+chisq.test(gendertable,correct=FALSE)
+```
+
+### Frequency table of RCTs and CRCTs by sample size, where 1 is less than 50 and 2 is from 50 to 100
+```{r, echo = FALSE}
+table(final_data$N_R[final_data$Type_R < 5])
+```
+
+```{r,include=FALSE}
+# Note that the above frequency table includes only my opinion of the sample size. There were 13 of 309 (4.2%) articles where Matt and I disagreed on sample size, listed below. Obviously, this inconsistency is not enough to sway the trend.
+agree_ATX = data.frame(Article = agree_ATS$Article[agree_ATS$N_R != agree_ATS$N_M], N_R = agree_ATS$N_R[agree_ATS$N_R != agree_ATS$N_M], N_M = agree_ATS$N_M[agree_ATS$N_R != agree_ATS$N_M])
+agree_ATY = data.frame(Article = agree_ATT$Article[agree_ATT$N_R != agree_ATT$N_M], N_R = agree_ATT$N_R[agree_ATT$N_R != agree_ATT$N_M], N_M = agree_ATT$N_M[agree_ATT$N_R != agree_ATT$N_M])
+rbind(agree_ATX,agree_ATY)
+```
