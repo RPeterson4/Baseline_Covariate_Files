@@ -1,7 +1,7 @@
 ```{r, include = FALSE}
 require(plyr)
 
-full = read.csv("C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/Table_1_PValue_Study.csv",skip = 1)
+full = read.csv("C:/Users/RLP/Downloads/Table_1_PValue_Study.csv",skip = 1)
 full2 = rename(full,c("What.is.your.name." = "name","What.type.of.trial.is.this." = "Type","How.many.individuals.were.enrolled.in.this.study." = "N", "Is.there.a.baseline.characteristics.table." = "Table","If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....Yes..p.value.mentioned"="No_Tab_TextP",
 "If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....No" ="No_Tab_TextN",
 "If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....Yes..see.text.pasted.below" = "No_Tab_TextT", "If.no..is.there.any.suggestion.in.the.text.that.the.authors.used.statistics.to.compare.baseline.d....Yes..confidence.intervals.or.standard.error.mentioned"="No_Tab_TextC",
@@ -33,73 +33,133 @@ subM2 = rename(subM, c("Year" = "Year_M", "Type" = "Type_M", "N" = "N_M", "Table
 R_half = data.frame(Article = subR2$Article, Year_R = subR2$Year_R, Type_R = subR2$Type_R, N_R = subR2$N_R, Table_R = subR2$Table_R, tab_sig_R = subR2$tab_sig_R, no_tab_R = subR2$no_tab_R, Comments_R = subR2$Comments_R)
 M_half = data.frame(Article = subM2$Article,Year_M = subM2$Year_M,Type_M = subM2$Type_M, N_M = subM2$N_M, Table_M = subM2$Table_M, tab_sig_M = subM2$tab_sig_M, no_tab_M = subM2$no_tab_M, Comments_M = subM2$Comments_M)
 
-# Cleaned complete dataset. No inconsistencies between Matt and me for article number, year of paper, presence of baseline table, and presence of significance testing.
+# Cleaned complete dataset
 final_data = merge(R_half,M_half,by="Article", all = TRUE)
 
-# To read the variable values in the dataset:
-# For many variable names, _R and _M refer to answers submitted by Ross and Matt, respectively.
-# Name: 1 is Ross, 3 is Matt
+# Disagree on type of trial
+diff_Type = data.frame(Article = final_data$Article[final_data$Type_R != final_data$Type_M],Type_R = final_data$Type_R[final_data$Type_R != final_data$Type_M],Type_M = final_data$Type_M[final_data$Type_R != final_data$Type_M])
+diff_Type
 
-# Type: 1 is individual RCT, 2 is CRCT by Team, 3 is CRCT not by Team, 5 is none, 6 is crossover
+which(is.na(final_data$Type_M))
 
-# N: 1 is < 50, 2 is 50-100, 3 is 101-150, 4 is 401-500, 5 is > 500, 6 is 201-300, 7 is 301-400
+# Disagree on Year of Publication
+t_Type = data.frame(Article = final_data$Article[final_data$Year_R != final_data$Year_M],Year_R = final_data$Year_R[final_data$Year_R != final_data$Year_M],Year_M = final_data$Year_M[final_data$Year_R != final_data$Year_M])
+t_Type
 
-# Table: 1 is has baseline covariate table, 2 is no
+# Disagree on sample size
+N_Type = data.frame(Article = final_data$Article[final_data$N_R != final_data$N_M],N_R = final_data$N_R[final_data$N_R != final_data$N_M],N_M = final_data$N_M[final_data$N_R != final_data$N_M])
+N_Type
 
-# tab_sig: For question "Are p-values presented..." 1 is p-value, 2 is confidence interval, 3 is # text, 4 is sig referenced, 5 is no
+table(final_data$N_M,exclude=NULL)
 
-# no_tab: For question "If no...", 1 is p-value, 2 is confidence interval, 3 is text, 4 is no
+# Subset of articles where we agreed on type of trial
+agree = final_data[!final_data$Article%in%diff_Type$Article,] 
 
-# Subset of article with baseline table
-agree_ATS = subset(final_data, Table_R == 1 & Type_R < 5)
-# Subset of article with no baseline table
-agree_ATT = subset(final_data, Table_R == 2 & Type_R < 5)
+# Disagree on whether baseline table is present
+agree_DT = data.frame(Article = agree$Article[agree$Table_R != agree$Table_M & agree$Type_R < 4], Table_R = agree$Table_R[agree$Table_R != agree$Table_M & agree$Type_R < 4], Table_M = agree$Table_M[agree$Table_R != agree$Table_M & agree$Type_R < 4])
+agree_DT
 
-# A bunch of subsets necessary for the data analysis
-sub05_T = subset(agree_ATS, Year_R == 1)
-subt_05 = subset(sub05_T, tab_sig_R == 5)
-sub15_T = subset(agree_ATS, Year_R == 3)
-subt_15 = subset(sub15_T, tab_sig_R == 5)
-sub05_N = subset(agree_ATT, Year_R == 1)
-sub15_N = subset(agree_ATT, Year_R == 3)
-```
+# Subset of article where we agreed on presence of baseline table
+agree_AT = agree[!agree$Article%in%agree_DT$Article,]
 
-### 2005 and 2015 articles with baseline table
-```{r}
-nrow(sub05_T) # Number of 2005 articles with baseline table
-length(sub05_T$tab_sig_R[sub05_T$tab_sig_R < 5]) # Have sig test
-length(subt_05$Article) # Number of 2005 articles with no sig test in baseline table
-length(subt_05$Article[subt_05$no_tab_R < 4]) # Have sig test in text
-nrow(sub15_T) # Number of 2015 articles with baseline table
-length(sub15_T$tab_sig_R[sub15_T$tab_sig_R < 5]) # Have sig test
-nrow(subt_15) # Number of 2015 articles with no sig test in baseline table
-length(subt_15$Article[subt_15$no_tab_R < 4]) # Have sig test in text
-```
+# Data where we agreed on type of trial, presence of table
+agree_ATS = subset(agree_AT, Table_R == 1 & Type_R < 5)
 
-### 2005 and 2015 articles without baseline table
-```{r}
-nrow(sub05_N) # Number of 2005 articles without baseline table
-length(sub05_N$no_tab_R[sub05_N$no_tab_R < 4]) # Have sig test in text
-nrow(sub15_N) # Number of 2015 articles without baseline table
-length(sub15_N$no_tab_R[sub15_N$no_tab_R < 4]) ## Have sig test in text
-```
+# Data where we agreed on type of trial, no presence of table
+agree_ATT = subset(agree_AT, Table_R == 2 & Type_R < 5)
 
-### Chi-square test for Table 1 
-```{r,echo=FALSE}
-gendertable = array(c(27,18,18,27),dim=c(2,2),dimnames = list(Gender = c("Male", "Female"), 
-                                                            Treatment = c("Yes","No")))
-print(gendertable)
-chisq.test(gendertable,correct=FALSE)
-```
+# Disagree on presence of significance testing in baseline table
+agree_ATA = data.frame(Article = agree_ATS$Article[agree_ATS$tab_sig_R != agree_ATS$tab_sig_M], tab_sig_R = agree_ATS$tab_sig_R[agree_ATS$tab_sig_R != agree_ATS$tab_sig_M], tab_sig_M = agree_ATS$tab_sig_M[agree_ATS$tab_sig_R != agree_ATS$tab_sig_M])
+agree_ATA
 
-### Frequency table of RCTs and CRCTs by sample size, where 1 is less than 50 and 2 is from 50 to 100
-```{r, echo = FALSE}
-table(final_data$N_R[final_data$Type_R < 5])
-```
+# Disagree on presence of significance testing in text
+agree_ATB = data.frame(Article = agree_ATS$Article[agree_ATS$no_tab_R != agree_ATS$no_tab_M], Text_R = agree_ATS$no_tab_R[agree_ATS$no_tab_R != agree_ATS$no_tab_M], Text_M = agree_ATS$no_tab_M[agree_ATS$no_tab_R != agree_ATS$no_tab_M])
+agree_ATB[complete.cases(agree_ATB * 0), , drop=FALSE]
 
-```{r,include=FALSE}
-# Note that the above frequency table includes only my opinion of the sample size. There were 13 of 309 (4.2%) articles where Matt and I disagreed on sample size, listed below. Obviously, this inconsistency is not enough to sway the trend.
+# Disagree on sample size
 agree_ATX = data.frame(Article = agree_ATS$Article[agree_ATS$N_R != agree_ATS$N_M], N_R = agree_ATS$N_R[agree_ATS$N_R != agree_ATS$N_M], N_M = agree_ATS$N_M[agree_ATS$N_R != agree_ATS$N_M])
+agree_ATX
 agree_ATY = data.frame(Article = agree_ATT$Article[agree_ATT$N_R != agree_ATT$N_M], N_R = agree_ATT$N_R[agree_ATT$N_R != agree_ATT$N_M], N_M = agree_ATT$N_M[agree_ATT$N_R != agree_ATT$N_M])
-rbind(agree_ATX,agree_ATY)
+agree_ATY
+
+# Disagree on in-text reference to statistical tests
+agree_ATO = data.frame(Article = agree_ATT$Article[agree_ATT$no_tab_R != agree_ATT$no_tab_M], no_tab_R = agree_ATT$no_tab_R[agree_ATT$no_tab_R != agree_ATT$no_tab_M], no_tab_M = agree_ATT$no_tab_M[agree_ATT$no_tab_R != agree_ATT$no_tab_M])
+agree_ATO
 ```
+
+### Articles with baseline table
+```{r}
+length(agree_ATS$tab_sig_R) ## Total
+length(agree_ATS$tab_sig_R[agree_ATS$tab_sig_R < 5]) ## Have sig test
+subt = subset(agree_ATS, tab_sig_R == 5)
+length(subt$Article[subt$no_tab_R < 4])
+
+sub05_T = subset(agree_ATS, Year_R == 1)
+
+length(sub05_T$tab_sig_R) ## 2005
+length(sub05_T$tab_sig_R[sub05_T$tab_sig_R < 5]) ## Have sig test for 2005
+
+table(sub05_T$N_R[sub05_T$tab_sig_R < 5]) 
+
+subt_05 = subset(sub05_T, tab_sig_R == 5)
+length(subt_05$Article[subt_05$no_tab_R < 4])
+
+table(subt_05$N_R[subt_05$no_tab_R < 4])
+table(subt_05$N_R[subt_05$no_tab_R == 4])
+
+sub15_T = subset(agree_ATS, Year_R == 3)
+
+table(sub15_T$N_R[sub15_T$tab_sig_R < 5]) 
+
+length(sub15_T$tab_sig_R) ## 2015
+length(sub15_T$tab_sig_R[sub15_T$tab_sig_R < 5]) ## Have sig test for 2015
+
+subt_15 = subset(sub15_T, tab_sig_R == 5)
+length(subt_15$Article[subt_15$no_tab_R < 4])
+
+table(subt_15$N_R[subt_15$no_tab_R < 4])
+table(subt_15$N_R[subt_15$no_tab_R == 4])
+```
+
+### Articles without baseline table
+```{r}
+length(agree_ATT$no_tab_R) ## Total
+length(agree_ATT$no_tab_R[agree_ATT$no_tab_R < 4]) ## Text reference to sig test
+
+sub05_N = subset(agree_ATT, Year_R == 1)
+
+length(sub05_N$no_tab_R) ## 2005
+length(sub05_N$no_tab_R[sub05_N$no_tab_R < 4]) ## Have sig test for 2005
+
+table(sub05_N$N_R[subt_05$no_tab_R < 4])
+table(sub05_N$N_R[subt_05$no_tab_R == 4])
+
+sub15_N = subset(agree_ATT, Year_R == 3)
+
+length(sub15_N$no_tab_R) ## 2015
+length(sub15_N$no_tab_R[sub15_N$no_tab_R < 4]) ## Have sig test for 2015
+
+table(sub15_N$N_R[subt_05$no_tab_R < 4])
+table(sub15_N$N_R[subt_05$no_tab_R == 4])
+```
+
+a1 = read.csv("C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/Articles.csv")
+a2 = read.csv("C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/Articles JK Added.csv")
+a3 = a1$Article[!a1$Article%in%a2$Article]
+
+write.csv(a3$Article, file = "C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/ArticlesRCT.csv")
+
+### To read the variable values in the dataset:
+For many variable names, _R and _M refer to answers submitted by Ross and Matt, respectively.
+
+Name: 1 is Ross, 3 is Matt
+
+Type: 1 is individual RCT, 2 is CRCT by Team, 3 is CRCT not by Team, 5 is none, 6 is crossover
+
+N: 1 is < 50, 2 is 50-100, 3 is 101-150, 4 is 401-500, 5 is > 500, 6 is 201-300, 7 is 301-400
+
+Table: 1 is has baseline covariate table, 2 is no
+
+tab_sig: For question "Are p-values presented..." 1 is p-value, 2 is confidence interval, 3 is text, 4 is sig referenced, 5 is no
+
+no_tab: For question "If no...", 1 is p-value, 2 is confidence interval, 3 is text, 4 is no

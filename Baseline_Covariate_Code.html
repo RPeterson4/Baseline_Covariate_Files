@@ -118,53 +118,104 @@ $(document).ready(function () {
 </div>
 
 
-<div id="and-2015-articles-with-baseline-table" class="section level3">
-<h3>2005 and 2015 articles with baseline table</h3>
-<pre class="r"><code>nrow(sub05_T) # Number of 2005 articles with baseline table</code></pre>
-<pre><code>## [1] 56</code></pre>
-<pre class="r"><code>length(sub05_T$tab_sig_R[sub05_T$tab_sig_R &lt; 5]) # Have sig test</code></pre>
-<pre><code>## [1] 30</code></pre>
-<pre class="r"><code>length(subt_05$Article) # Number of 2005 articles with no sig test in baseline table</code></pre>
-<pre><code>## [1] 26</code></pre>
-<pre class="r"><code>length(subt_05$Article[subt_05$no_tab_R &lt; 4]) # Have sig test in text</code></pre>
-<pre><code>## [1] 16</code></pre>
-<pre class="r"><code>nrow(sub15_T) # Number of 2015 articles with baseline table</code></pre>
+<div id="articles-with-baseline-table" class="section level3">
+<h3>Articles with baseline table</h3>
+<pre class="r"><code>length(agree_ATS$tab_sig_R) ## Total</code></pre>
+<pre><code>## [1] 266</code></pre>
+<pre class="r"><code>length(agree_ATS$tab_sig_R[agree_ATS$tab_sig_R &lt; 5]) ## Have sig test</code></pre>
+<pre><code>## [1] 124</code></pre>
+<pre class="r"><code>subt = subset(agree_ATS, tab_sig_R == 5)
+length(subt$Article[subt$no_tab_R &lt; 4])</code></pre>
+<pre><code>## [1] 71</code></pre>
+<pre class="r"><code>sub05_T = subset(agree_ATS, Year_R == 1)
+
+length(sub05_T$tab_sig_R) ## 2005</code></pre>
+<pre><code>## [1] 71</code></pre>
+<pre class="r"><code>length(sub05_T$tab_sig_R[sub05_T$tab_sig_R &lt; 5]) ## Have sig test for 2005</code></pre>
+<pre><code>## [1] 33</code></pre>
+<pre class="r"><code>table(sub05_T$N_R[sub05_T$tab_sig_R &lt; 5]) </code></pre>
+<pre><code>## 
+##  1  2  3  6 
+## 17 12  3  1</code></pre>
+<pre class="r"><code>subt_05 = subset(sub05_T, tab_sig_R == 5)
+length(subt_05$Article[subt_05$no_tab_R &lt; 4])</code></pre>
+<pre><code>## [1] 20</code></pre>
+<pre class="r"><code>table(subt_05$N_R[subt_05$no_tab_R &lt; 4])</code></pre>
+<pre><code>## 
+##  1  2  3  5 
+## 10  7  2  1</code></pre>
+<pre class="r"><code>table(subt_05$N_R[subt_05$no_tab_R == 4])</code></pre>
+<pre><code>## 
+##  1  2  3 
+## 14  1  3</code></pre>
+<pre class="r"><code>sub15_T = subset(agree_ATS, Year_R == 3)
+
+table(sub15_T$N_R[sub15_T$tab_sig_R &lt; 5]) </code></pre>
+<pre><code>## 
+##  1  2  3  4  6  7 
+## 30 41 14  1  4  1</code></pre>
+<pre class="r"><code>length(sub15_T$tab_sig_R) ## 2015</code></pre>
 <pre><code>## [1] 195</code></pre>
-<pre class="r"><code>length(sub15_T$tab_sig_R[sub15_T$tab_sig_R &lt; 5]) # Have sig test</code></pre>
-<pre><code>## [1] 96</code></pre>
-<pre class="r"><code>nrow(subt_15) # Number of 2015 articles with no sig test in baseline table</code></pre>
-<pre><code>## [1] 99</code></pre>
-<pre class="r"><code>length(subt_15$Article[subt_15$no_tab_R &lt; 4]) # Have sig test in text</code></pre>
-<pre><code>## [1] 47</code></pre>
+<pre class="r"><code>length(sub15_T$tab_sig_R[sub15_T$tab_sig_R &lt; 5]) ## Have sig test for 2015</code></pre>
+<pre><code>## [1] 91</code></pre>
+<pre class="r"><code>subt_15 = subset(sub15_T, tab_sig_R == 5)
+length(subt_15$Article[subt_15$no_tab_R &lt; 4])</code></pre>
+<pre><code>## [1] 51</code></pre>
+<pre class="r"><code>table(subt_15$N_R[subt_15$no_tab_R &lt; 4])</code></pre>
+<pre><code>## 
+##  1  2  3  5  7 
+## 26 15  7  2  1</code></pre>
+<pre class="r"><code>table(subt_15$N_R[subt_15$no_tab_R == 4])</code></pre>
+<pre><code>## 
+##  1  2  3  4  5  7 
+## 31 14  5  1  1  1</code></pre>
 </div>
-<div id="and-2015-articles-without-baseline-table" class="section level3">
-<h3>2005 and 2015 articles without baseline table</h3>
-<pre class="r"><code>nrow(sub05_N) # Number of 2005 articles without baseline table</code></pre>
+<div id="articles-without-baseline-table" class="section level3">
+<h3>Articles without baseline table</h3>
+<pre class="r"><code>length(agree_ATT$no_tab_R) ## Total</code></pre>
+<pre><code>## [1] 58</code></pre>
+<pre class="r"><code>length(agree_ATT$no_tab_R[agree_ATT$no_tab_R &lt; 4]) ## Text reference to sig test</code></pre>
+<pre><code>## [1] 15</code></pre>
+<pre class="r"><code>sub05_N = subset(agree_ATT, Year_R == 1)
+
+length(sub05_N$no_tab_R) ## 2005</code></pre>
 <pre><code>## [1] 14</code></pre>
-<pre class="r"><code>length(sub05_N$no_tab_R[sub05_N$no_tab_R &lt; 4]) # Have sig test in text</code></pre>
+<pre class="r"><code>length(sub05_N$no_tab_R[sub05_N$no_tab_R &lt; 4]) ## Have sig test for 2005</code></pre>
 <pre><code>## [1] 4</code></pre>
-<pre class="r"><code>nrow(sub15_N) # Number of 2015 articles without baseline table</code></pre>
+<pre class="r"><code>table(sub05_N$N_R[subt_05$no_tab_R &lt; 4])</code></pre>
+<pre><code>## 
+## 1 5 
+## 5 1</code></pre>
+<pre class="r"><code>table(sub05_N$N_R[subt_05$no_tab_R == 4])</code></pre>
+<pre><code>## 
+## 1 2 3 6 
+## 4 2 1 1</code></pre>
+<pre class="r"><code>sub15_N = subset(agree_ATT, Year_R == 3)
+
+length(sub15_N$no_tab_R) ## 2015</code></pre>
 <pre><code>## [1] 44</code></pre>
-<pre class="r"><code>length(sub15_N$no_tab_R[sub15_N$no_tab_R &lt; 4]) ## Have sig test in text</code></pre>
+<pre class="r"><code>length(sub15_N$no_tab_R[sub15_N$no_tab_R &lt; 4]) ## Have sig test for 2015</code></pre>
 <pre><code>## [1] 11</code></pre>
-</div>
-<div id="chi-square-test-for-table-1" class="section level3">
-<h3>Chi-square test for Table 1</h3>
-<pre><code>##         Treatment
-## Gender   Yes No
-##   Male    27 18
-##   Female  18 27</code></pre>
+<pre class="r"><code>table(sub15_N$N_R[subt_05$no_tab_R &lt; 4])</code></pre>
 <pre><code>## 
-##  Pearson's Chi-squared test
-## 
-## data:  gendertable
-## X-squared = 3.6, df = 1, p-value = 0.05778</code></pre>
-</div>
-<div id="frequency-table-of-rcts-and-crcts-by-sample-size-where-1-is-less-than-50-and-2-is-from-50-to-100" class="section level3">
-<h3>Frequency table of RCTs and CRCTs by sample size, where 1 is less than 50 and 2 is from 50 to 100</h3>
+##  1  2  3  5  7 
+## 12  6  1  1  2</code></pre>
+<pre class="r"><code>table(sub15_N$N_R[subt_05$no_tab_R == 4])</code></pre>
 <pre><code>## 
-##   1   2   3   4   5   6   7 
-## 149 106  35   2   7   5   5</code></pre>
+##  1  2  5 
+## 10 11  1</code></pre>
+<p>a1 = read.csv(“C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/Articles.csv”) a2 = read.csv(“C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/Articles JK Added.csv”) a3 = a1<span class="math inline">\(Article[!a1\)</span>Article%in%a2$Article]</p>
+<p>write.csv(a3$Article, file = “C:/Users/RLP/Documents/Word Documents/Biostatistics/Data Sets/ArticlesRCT.csv”)</p>
+</div>
+<div id="to-read-the-variable-values-in-the-dataset" class="section level3">
+<h3>To read the variable values in the dataset:</h3>
+<p>For many variable names, _R and _M refer to answers submitted by Ross and Matt, respectively.</p>
+<p>Name: 1 is Ross, 3 is Matt</p>
+<p>Type: 1 is individual RCT, 2 is CRCT by Team, 3 is CRCT not by Team, 5 is none, 6 is crossover</p>
+<p>N: 1 is &lt; 50, 2 is 50-100, 3 is 101-150, 4 is 401-500, 5 is &gt; 500, 6 is 201-300, 7 is 301-400</p>
+<p>Table: 1 is has baseline covariate table, 2 is no</p>
+<p>tab_sig: For question “Are p-values presented…” 1 is p-value, 2 is confidence interval, 3 is text, 4 is sig referenced, 5 is no</p>
+<p>no_tab: For question “If no…”, 1 is p-value, 2 is confidence interval, 3 is text, 4 is no</p>
 </div>
 
 
